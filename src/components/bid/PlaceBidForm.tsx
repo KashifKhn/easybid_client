@@ -49,7 +49,7 @@ export const PlaceBidForm: React.FC<BidFormProps> = ({ auction, userId }) => {
       (isNaN(bidValue) || bidValue <= calculateMinBid())
     ) {
       toast.error("Please enter a valid bid amount.", {
-        position: "top-right",
+        position: "top-left",
       });
       return;
     }
