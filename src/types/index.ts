@@ -1,3 +1,5 @@
+import { UseMutationResult } from "@tanstack/react-query";
+
 export type UserRole = "BUYER" | "SELLER" | "ADMIN";
 
 export type AuctionStatus = "PENDING" | "ACTIVE" | "COMPLETED" | "CANCELED";
@@ -6,13 +8,16 @@ export type AuctionType = "FIXED" | "FREE";
 
 export type IncrementType = "AMOUNT" | "PERCENTAGE" | "NONE";
 
-export interface CreateUser {
+export interface Register {
   name: string;
   email: string;
   password: string;
-  address: string;
-  phoneNumber: string;
   role: UserRole;
+}
+
+export interface Login {
+  email: string;
+  password: string;
 }
 
 export interface UpdateUser {
@@ -21,7 +26,7 @@ export interface UpdateUser {
   password?: string;
   address?: string;
   phoneNumber?: string;
-  role?: UserRole;
+  bio?: string;
 }
 
 export interface UserResponse {
@@ -31,9 +36,17 @@ export interface UserResponse {
   deletedAt: string | null;
   name: string;
   email: string;
-  address: string;
-  phoneNumber: string;
+  address: string | null;
+  phoneNumber: string | null;
+  bio: string | null;
   role: UserRole;
+}
+
+export interface AuthResponse {
+  user: UserResponse;
+  isAuthenticated: boolean | true;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface CategoryResponse {
@@ -61,6 +74,10 @@ export interface UpdateItem {
   startingBid?: number;
   buyNowPrice?: number;
   categoryId?: string;
+}
+
+export interface ItemFormData extends CreateItem {
+  files: File[];
 }
 
 export interface ItemImage {
@@ -137,4 +154,11 @@ export interface BidResponse {
   user: UserResponse;
   auction: AuctionResponse;
   amount: number;
+}
+
+export interface AuthContextType {
+  user: AuthResponse | null;
+  login: UseMutationResult<AuthResponse, Error, Login, unknown>;
+  register: UseMutationResult<AuthResponse, Error, Register, unknown>;
+  logout: () => void;
 }
