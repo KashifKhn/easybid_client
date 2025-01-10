@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AuctionResponse, BidResponse } from "@/types";
+import { AuctionResponse } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "react-hot-toast";
-import { createBid } from "@/app/_actions/Bid";
+import { useBid } from "@/hooks/useBid";
 
 interface BidFormProps {
   auction: AuctionResponse;
@@ -17,30 +16,11 @@ interface BidFormProps {
 
 export const PlaceBidForm: React.FC<BidFormProps> = ({ auction, userId }) => {
   const [bidAmount, setBidAmount] = useState("");
-  const queryClient = useQueryClient();
 
-  const bidMutation = useMutation<
-    BidResponse,
-    Error,
-    { userId: string; auctionId: string; amount: number }
-  >({
-    mutationFn: createBid,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["auction", auction.id] });
-      queryClient.invalidateQueries({ queryKey: ["bid", auction.id] });
-      toast.success("Your bid has been placed successfully!", {
-        position: "top-right",
-      });
-      setBidAmount("");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to place bid.", {
-        position: "top-right",
-      });
-    },
-  });
+  const { usePlaceBid } = useBid();
+  const { mutateAsync, isPending } = usePlaceBid;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const bidValue = parseFloat(bidAmount);
@@ -54,7 +34,7 @@ export const PlaceBidForm: React.FC<BidFormProps> = ({ auction, userId }) => {
       return;
     }
 
-    bidMutation.mutate({
+    await mutateAsync({
       userId,
       auctionId: auction.id,
       amount: bidValue,
@@ -106,15 +86,11 @@ export const PlaceBidForm: React.FC<BidFormProps> = ({ auction, userId }) => {
               min={minBid}
               step="any"
               required={auction.type === "FREE"}
-              disabled={bidMutation.isPending || auction.type === "FIXED"}
+              disabled={isPending || auction.type === "FIXED"}
             />
           </div>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={bidMutation.isPending}
-          >
-            {bidMutation.isPending ? "Placing Bid..." : "Place Bid"}
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Placing Bid..." : "Place Bid"}
           </Button>
         </form>
       </CardContent>

@@ -1,7 +1,7 @@
 import { AuctionResponse } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { ImageCarousel } from "./ImageCarousel";
 import { RemainingTime } from "./RemainingTime";
+import { ImageCarousel } from "../ImageCarousel";
 
 interface AuctionDetailProps {
   auction: AuctionResponse;
@@ -23,8 +23,8 @@ export const AuctionDetail: React.FC<AuctionDetailProps> = ({ auction }) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">{item.name}</h1>
-
-        <RemainingTime endTime={endTime} />
+        {status == "ACTIVE" && <RemainingTime endTime={endTime} />}
+        {status == "PENDING" && <RemainingTime startTime={startTime} />}
       </div>
       <ImageCarousel images={item.images} alt={item.name} />
       <div className="flex items-center space-x-2">

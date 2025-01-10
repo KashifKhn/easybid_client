@@ -1,28 +1,35 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
-import { BidResponse } from "@/types";
-import { getBidByAuctions } from "@/app/_actions/Bid";
 import { GlobalLoadingState } from "../GlobalLoadingState";
 import { GlobalErrorState } from "../GlobalErrorState";
+import { useBid } from "@/hooks/useBid";
+import { useAuctions } from "@/hooks/useAuctions";
 
 const TopBidCard = ({ auctionId }: { auctionId: string }) => {
+  const { useBidQuery } = useBid();
   const {
     data: bids,
     isLoading,
     isError,
     error,
     refetch,
-  } = useQuery<BidResponse[]>({
-    queryKey: ["bid", auctionId],
-    queryFn: () => getBidByAuctions(auctionId),
-    staleTime: 0,
-  });
+  } = useBidQuery({ auctionId });
+
+  const { getAuction } = useAuctions();
+  const { data: auction } = getAuction(auctionId);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Top 10 Bids</CardTitle>
+        {auction?.status === "ACTIVE" && <CardTitle>Top 10 Bids</CardTitle>}
+        {auction?.status === "COMPLETED" && (
+          <CardTitle>
+            Winner{" "}
+            <span className="font-bold text-xl text-green-800">
+              {auction.highestBid.user.name}
+            </span>
+          </CardTitle>
+        )}
       </CardHeader>
       <CardContent>
         {isLoading && (

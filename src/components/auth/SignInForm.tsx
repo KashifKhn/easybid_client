@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -14,21 +17,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 import { signInSchema } from "@/lib/validations/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import type * as z from "zod";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { useEffect } from "react";
 
 type SignInFormValues = z.infer<typeof signInSchema>;
 
 export function SignInForm() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, user } = useAuth();
+  const { mutateAsync, isPending } = login;
 
+  const router = useRouter();
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -37,14 +43,35 @@ export function SignInForm() {
     },
   });
 
-  function onSubmit(values: SignInFormValues) {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values);
-      setIsLoading(false);
-    }, 1000);
-  }
+  //useEffect(() => {
+  //  if (user) {
+  //    if (user) {
+  //      router.push("/");
+  //    }
+  //  }
+  //}, []);
+
+  const onSubmit = async (values: SignInFormValues) => {
+    try {
+      await mutateAsync(values);
+      toast.success("Signin successfully", {
+        position: "top-right",
+      });
+      form.reset();
+      if (user?.user.role === "BUYER") {
+        router.push("/");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message, { position: "top-right" });
+      } else {
+        toast.error("An unexpected error occurred", { position: "top-right" });
+      }
+      console.error(error);
+    }
+  };
 
   return (
     <Card className="w-full">
@@ -88,13 +115,19 @@ export function SignInForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
+                <span className="flex gap-2">
+                  Signing in... <LoadingSpinner size="xsm" color="white" />{" "}
+                </span>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
         </Form>
         <div className="mt-4 text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/auth/signup" className="text-primary hover:underline">
             Sign Up
           </Link>

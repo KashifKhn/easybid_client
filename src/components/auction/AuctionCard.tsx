@@ -13,19 +13,20 @@ import Link from "next/link";
 
 interface AuctionCardProps {
   auction: AuctionResponse;
-  latestBid?: { amount: number; user: { name: string } };
 }
 
-export const AuctionCard: React.FC<AuctionCardProps> = ({
-  auction,
-  latestBid,
-}) => {
+export const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
   const { item, startTime, endTime, status } = auction;
 
   return (
     <Card className="relative">
-      {status === "COMPLETED" && (
-        <Badge className="absolute top-2 right-2 z-10">Sold</Badge>
+      {status !== "CANCELED" && (
+        <Badge className="absolute top-2 right-2 z-10">{status}</Badge>
+      )}
+      {status === "CANCELED" && (
+        <Badge className="absolute bg-destructive top-2 right-2 z-10">
+          {status}
+        </Badge>
       )}
       <CardHeader>
         <CardTitle>{item.name}</CardTitle>
@@ -42,8 +43,14 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({
         </div>
         <p className="text-sm mb-2">{item.description}</p>
         <p className="font-semibold">Starting Bid: ${item.startingBid}</p>
-        {status === "ACTIVE" && latestBid && (
-          <p className="text-sm">Current Bid: ${latestBid.amount}</p>
+        {status === "ACTIVE" && auction.highestBid && (
+          <p className="text-sm">Current Bid: ${auction.highestBid.amount}</p>
+        )}
+        {status === "COMPLETED" && auction.highestBid && (
+          <>
+            <p className="text-sm">Wining Bid: ${auction.highestBid.amount}</p>
+            <p className="text-sm">Winner: {auction.highestBid.user.name}</p>
+          </>
         )}
         <p className="text-sm">
           {status === "ACTIVE"

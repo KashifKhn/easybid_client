@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { CategoryResponse } from "@/types";
-import { getCategories } from "@/app/_actions/Category";
 import { Button } from "./ui/button";
+import { useCategories } from "@/hooks/useCategories";
 
 interface CategoryFilterProps {
   onCategoriesChangeAction: (categories: string[]) => Promise<void>;
@@ -16,15 +14,12 @@ export function CategoryFilter({
   onCategoriesChangeAction,
 }: CategoryFilterProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-
+  const { getCategories } = useCategories();
   const {
     data: categories,
     isLoading,
-    error,
-  } = useQuery<CategoryResponse[]>({
-    queryKey: ["categories"],
-    queryFn: getCategories,
-  });
+    isError,
+  } = getCategories({ isActive: "true" });
 
   const toggleCategory = async (category: string) => {
     const newCategories = selectedCategories.includes(category)
@@ -41,7 +36,7 @@ export function CategoryFilter({
   };
 
   if (isLoading) return <div>Loading categories...</div>;
-  if (error) return <div>Error loading categories</div>;
+  if (isError) return <div>Error loading categories</div>;
   if (!categories) return null;
 
   return (

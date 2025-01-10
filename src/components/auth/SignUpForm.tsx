@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -30,11 +29,24 @@ import {
 } from "@/components/ui/card";
 import { signUpSchema } from "@/lib/validations/auth";
 import type * as z from "zod";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { useEffect } from "react";
 
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 export function SignUpForm() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, user } = useAuth();
+  const { mutateAsync, isPending } = register;
+  const router = useRouter();
+
+  //useEffect(() => {
+  //  if (user) {
+  //    router.push("/");
+  //  }
+  //}, []);
 
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
@@ -47,12 +59,23 @@ export function SignUpForm() {
     },
   });
 
-  function onSubmit(values: SignUpFormValues) {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  }
+  const onSubmit = async (values: SignUpFormValues) => {
+    try {
+      await mutateAsync(values);
+      toast.success("Account created successfully", {
+        position: "top-right",
+      });
+      form.reset();
+      router.push("/auth/signin");
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message, { position: "top-right" });
+      } else {
+        toast.error("An unexpected error occurred", { position: "top-right" });
+      }
+      console.error(error);
+    }
+  };
 
   return (
     <Card className="w-full">
@@ -150,8 +173,15 @@ export function SignUpForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Create Account"}
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
+                <span className="flex gap-2">
+                  Creating account...{" "}
+                  <LoadingSpinner size="xsm" color="white" />{" "}
+                </span>
+              ) : (
+                "Create Account"
+              )}
             </Button>
           </form>
         </Form>

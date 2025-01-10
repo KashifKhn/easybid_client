@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const Footer = () => {
   return (
-    <footer className="bg-primary text-primary-foreground py-8">
+    <footer className="bg-secondary text-primary-foreground py-8">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
@@ -46,7 +46,7 @@ export const Footer = () => {
           </div>
         </div>
         <div className="mt-8 text-center">
-          <p>&copy; 2024 EasyBid. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} EasyBid. All rights reserved.</p>
         </div>
       </div>
     </footer>
