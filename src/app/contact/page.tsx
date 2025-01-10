@@ -72,8 +72,8 @@ export default function ContactPage() {
           <div>
             <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
             <p className="text-muted-foreground mb-8">
-              Have questions? We'd love to hear from you. Send us a message and
-              we will respond as soon as possible.
+              Have questions? We&apos;d love to hear from you. Send us a message
+              and we will respond as soon as possible.
             </p>
             <div className="space-y-6">
               <div className="flex items-center gap-4">

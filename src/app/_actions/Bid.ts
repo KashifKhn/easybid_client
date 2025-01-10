@@ -1,19 +1,27 @@
 "use server";
 
 import axiosIn from "@/lib/axios";
-import { BidResponse, placeBid } from "@/types";
+import { BidResponse, PlaceBid } from "@/types";
 import axios from "axios";
 
-export const getBidByAuctions = async (
-  auctionId: string,
-): Promise<BidResponse[]> => {
-  const { data } = await axiosIn.get<BidResponse[]>(
-    `/bids?auctionId=${auctionId}`,
-  );
+export const getBidsFn = async ({
+  auctionId,
+  userId,
+}: {
+  auctionId?: string;
+  userId?: string;
+}): Promise<BidResponse[]> => {
+  const params = new URLSearchParams();
+  if (auctionId) params.append("auctionId", auctionId);
+  if (userId) params.append("userId", userId);
+
+  const { data } = await axiosIn.get<BidResponse[]>(`/bids`, {
+    params,
+  });
   return data;
 };
 
-export const createBid = async (bidData: placeBid): Promise<BidResponse> => {
+export const placeBidFn = async (bidData: PlaceBid): Promise<BidResponse> => {
   try {
     const { data } = await axiosIn.post<BidResponse>("/bids", bidData);
     return data;

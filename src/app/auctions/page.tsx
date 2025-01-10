@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,30 +11,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AuctionResponse } from "@/types";
 import { GlobalLoadingState } from "@/components/GlobalLoadingState";
 import { GlobalErrorState } from "@/components/GlobalErrorState";
-import { getAllAuctions } from "../_actions/Auction";
 import { AuctionGrid } from "@/components/auction/AuctionGrid";
 import { Card } from "@/components/ui/card";
 import { CategoryFilter } from "@/components/CategoryFilter";
+import { useAuctions } from "@/hooks/useAuctions";
 
 export default function AuctionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("ACTIVE");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isFilterd, setIsFilterd] = useState(false);
 
+  const { getAuctions } = useAuctions();
   const {
     data: auctions,
-    isLoading: auctionsLoading,
-    isError: auctionsError,
-    error: auctionsErrorData,
+    isLoading,
+    isError,
+    error,
     refetch,
-  } = useQuery<AuctionResponse[]>({
-    queryKey: ["auctions"],
-    queryFn: getAllAuctions,
-  });
+  } = getAuctions({});
 
   const filteredAuctions =
     auctions?.filter((auction) => {
@@ -66,14 +62,13 @@ export default function AuctionsPage() {
     setSelectedCategories(categories);
   };
 
-  if (auctionsLoading)
-    return <GlobalLoadingState message="Loading auctions..." />;
-
-  if (auctionsError)
+  if (isLoading)
+    return <GlobalLoadingState message="Loading auctions details..." />;
+  if (isError)
     return (
       <GlobalErrorState
         title="Failed to fetch auctions"
-        message={auctionsErrorData?.message}
+        message={error?.message}
         onRetry={refetch}
       />
     );
@@ -101,14 +96,15 @@ export default function AuctionsPage() {
                 <SelectItem value="COMPLETED" className="text-blue-600">
                   Completed
                 </SelectItem>
+                <SelectItem value="CANCELED" className="text-red-600">
+                  CANCELED
+                </SelectItem>
               </SelectContent>
             </Select>
           </Card>
         </div>
 
-        {/* Main Content */}
         <div className="space-y-6">
-          {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input

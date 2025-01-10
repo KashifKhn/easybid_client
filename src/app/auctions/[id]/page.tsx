@@ -1,14 +1,13 @@
 "use client";
 
-import { getAuction } from "@/app/_actions/Auction";
 import { GlobalErrorState } from "@/components/GlobalErrorState";
 import { GlobalLoadingState } from "@/components/GlobalLoadingState";
-import { AuctionResponse } from "@/types";
-import { useQuery } from "@tanstack/react-query";
 import { use } from "react";
 import { AuctionDetail } from "@/components/auction/AuctionDetail";
 import TopBidCard from "@/components/bid/TopBidCard";
 import { PlaceBidForm } from "@/components/bid/PlaceBidForm";
+import { useAuctions } from "@/hooks/useAuctions";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AuctionDetailPage({
   params,
@@ -16,17 +15,9 @@ export default function AuctionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const {
-    data: auction,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQuery<AuctionResponse, Error>({
-    queryKey: ["auction", id],
-    queryFn: () => getAuction(id),
-  });
-
+  const { getAuction } = useAuctions();
+  const { data: auction, isLoading, isError, error, refetch } = getAuction(id);
+  const { user } = useAuth();
   if (isLoading)
     return <GlobalLoadingState message="Loading auction details..." />;
   if (isError)
@@ -34,7 +25,7 @@ export default function AuctionDetailPage({
       <GlobalErrorState
         title="Failed to fetch auction details"
         message={error?.message}
-        onRetry={() => refetch()}
+        onRetry={refetch}
       />
     );
 
@@ -53,15 +44,20 @@ export default function AuctionDetailPage({
           <AuctionDetail auction={auction} />
         </div>
         <div>
-          <div className="space-y-8">
-            <PlaceBidForm
-              auction={auction}
-              userId={"522613bf-1f8f-4fb6-9026-c8c49257f808"}
-            />
-          </div>
-          <div className="mt-16">
-            <TopBidCard auctionId={auction.id} />
-          </div>
+          {auction.status === "ACTIVE" && user?.user.role === "BUYER" && (
+            <div className="space-y-8">
+              <PlaceBidForm
+                auction={auction}
+                userId={user?.user.id as string}
+              />
+            </div>
+          )}
+
+          {(auction.status === "COMPLETED" || auction.status === "ACTIVE") && (
+            <div className="mt-16">
+              <TopBidCard auctionId={auction.id} />
+            </div>
+          )}
         </div>
       </div>
     </div>

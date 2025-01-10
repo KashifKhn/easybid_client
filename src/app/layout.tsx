@@ -5,8 +5,10 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ReactQueryClientProvider } from "./ReactQueryProvider";
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "@/context/auth/AuthProvider";
 
 const inter = Inter({ subsets: ["latin"] });
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "EasyBid - Online Auction Platform",
@@ -20,14 +22,16 @@ export default function RootLayout({
 }) {
   return (
     <ReactQueryClientProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <Toaster />
-        </body>
-      </html>
+      <AuthProvider>
+        <html lang="en">
+          <body className={inter.className}>
+            <Navbar />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+            <Toaster />
+          </body>
+        </html>
+      </AuthProvider>
     </ReactQueryClientProvider>
   );
 }
