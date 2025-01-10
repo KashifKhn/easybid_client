@@ -49,6 +49,18 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
+export interface CreateCategory {
+  name: string;
+  description: string;
+  isActive: boolean;
+}
+
+export interface UpdateCategory {
+  name?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
 export interface CategoryResponse {
   id: string;
   createdAt: string;
@@ -140,7 +152,7 @@ export interface AuctionResponse {
   incrementPercentage: number;
 }
 
-export interface placeBid {
+export interface PlaceBid {
   userId: string;
   auctionId: string;
   amount?: number;
